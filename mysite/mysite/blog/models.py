@@ -3,7 +3,17 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 
 
+class PublishedManager(models.Manager):
+    """новый конкретно-прикладной менеджер, чтобы извлекать все посты, имеющие статус PUBLISHED"""
+
+    def get_queryset(self):  # переопределили этот метод
+        """Метод get_queryset() менеджера PublishedManager возвращает набор запросов QuerySet,
+        фильтрующий посты  только со статусом PUBLISHED"""
+        return super().get_queryset().filter(status=Post.Status.PUBLISHED)
+
+
 class Post(models.Model):
+
     class Status(models.TextChoices):
         """перечисляемый класс Status путем подклассирования класса models.TextChoices."""
         DRAFT = "DF", "Draft"
@@ -23,9 +33,11 @@ class Post(models.Model):
     status = models.CharField(max_length=2,
                               choices=Status.choices,
                               default=Status.DRAFT)
-
     # status, является экземпляром типа CharField. Оно содержит параметр choices, чтобы
     # ограничивать значение поля вариантами из Status.choices.
+
+    objects = models.Manager()  # менеджер, применяемый по умолчанию
+    published = PublishedManager()  # конкретно-прикладной менеджер
 
     class Meta:  # Meta-класс определяет метаданные модели
         ordering = ["-publish"]  # порядок извлечении объектов из базы данных
