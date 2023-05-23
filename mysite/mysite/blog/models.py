@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.models import User
 
@@ -13,14 +14,14 @@ class PublishedManager(models.Manager):
 
 
 class Post(models.Model):
-
     class Status(models.TextChoices):
         """перечисляемый класс Status путем подклассирования класса models.TextChoices."""
         DRAFT = "DF", "Draft"
         PUBLISHED = "PB", "Published"
 
     title = models.CharField(max_length=250)
-    slug = models.SlugField(max_length=250)
+    slug = models.SlugField(max_length=250,
+                            unique_for_date="publish")
     author = models.ForeignKey(User,
                                on_delete=models.CASCADE,
                                related_name="blog_posts")
@@ -50,3 +51,12 @@ class Post(models.Model):
 
     def __str__(self):
         return f"{self.title}"
+
+    def get_absolute_url(self):
+        """Функция-резольвер, которая позволят формировать URL-адреса динамически используя
+        их имя и любые требуемые параметры"""
+        return reverse("blog:post_detail",
+                       args=[self.publish.year,
+                             self.publish.month,
+                             self.publish.day,
+                             self.slug])
