@@ -2,6 +2,7 @@ from django.http import Http404
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 
+from .froms import EmailPostForm
 from .models import Post
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
@@ -51,3 +52,21 @@ def post_detail(request, year, month, day, post):
     return render(request=request,
                   template_name="blog/post/detail.html",
                   context={"post": post})
+
+
+def post_share(request, post_id):
+    """Извлечь пост по идентификатору post_id и PUBLISHED"""
+    post = get_object_or_404(Post,  # Извлечь пост по идентификатору post_id и PUBLISHED
+                             pk=post_id,
+                             status=Post.Status.PUBLISHED)
+    if request.method == "POST":  # Форма была передана на обработку
+        form = EmailPostForm(data=request.POST)  # забираем данные из полей формы
+        if form.is_valid():  # проверка корректно введены ли данные
+            data = form.cleaned_data  # Сохраняем очищенные данные в data
+            print(data)
+            # Отправить пост на почту
+    else:
+        form = EmailPostForm()  # просто создаем форму ввода для данных и передаем на фронт
+    return render(request=request,
+                  template_name="blog/post/share.html",
+                  context={"post": post, "form": form})
