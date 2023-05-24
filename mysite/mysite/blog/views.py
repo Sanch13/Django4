@@ -3,15 +3,14 @@ from django.http import Http404
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from django.conf import settings
-
-from .froms import EmailPostForm
-from .models import Post
+from django.views.decorators.http import require_POST
+from .froms import EmailPostForm, CommentForm
+from .models import Post, Comment
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 def index(request):
-    posts = Post.published.all()
-    return render(request=request, template_name="blog/base.html", context={"posts": posts})
+    return render(request=request, template_name="blog/base.html")
 
 
 def post_list(request):
@@ -91,3 +90,25 @@ def post_share(request, post_id):
     return render(request=request,
                   template_name="blog/post/share.html",
                   context={"post": post, "form": form, "sent": sent},)
+
+
+@require_POST
+def post_comment(request, post_id):
+    post = get_object_or_404(Post,
+                             id=post_id,
+                             status=Post.Status.PUBLISHED)
+    comment = None
+    form = CommentForm(data=request.POST)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        # Метод save() создает экземпляр модели, к которой форма привязана, и сохраняет его в базе
+        # данных. Если вызывать его, используя commit=False, то экземпляр модели создается, но не
+        # сохраняется в базе данных. Такой подход позволяет видоизменять объект перед его
+        # окончательным сохранением.
+        print(comment)
+        comment.post = post
+        print(comment)
+        comment.save()
+    return render(request=request,
+                  template_name="blog/post/comment.html",
+                  context={"post": post, "form": form, "comment": comment})
