@@ -6,8 +6,10 @@ from .models import Post, Comment
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ["title", "slug", "author", "publish", "status"]  # позволяет задавать поля
+    list_display = ["id", "title", "slug", "author", "publish", "status"]  # позволяет задавать поля
     # модели, которые вы хотите показывать на странице django admin
+    list_display_links = ("id", "title",)  # определяет, какие поля модели будут ссылками на
+    # редактирование объектов.
     list_filter = ["status", "created", "publish", "author"]  # позволяет фильтровать результаты
     # по полям
     search_fields = ["title", "body"]  # поиск по полям

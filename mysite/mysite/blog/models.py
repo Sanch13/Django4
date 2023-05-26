@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.models import User
+from taggit.managers import TaggableManager
 
 
 class PublishedManager(models.Manager):
@@ -39,6 +40,7 @@ class Post(models.Model):
 
     objects = models.Manager()  # менеджер, применяемый по умолчанию
     published = PublishedManager()  # конкретно-прикладной менеджер
+    tags = TaggableManager()  # добавлять, извлекать и удалять теги из объектов Post
 
     class Meta:  # Meta-класс определяет метаданные модели
         ordering = ["-publish"]  # порядок извлечении объектов из базы данных

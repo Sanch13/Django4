@@ -7,39 +7,51 @@ from django.views.decorators.http import require_POST
 from .froms import EmailPostForm, CommentForm
 from .models import Post, Comment
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from taggit.models import Tag
 
 
 def index(request):
     return render(request=request, template_name="blog/base.html")
 
 
-# def post_list(request):
-#     post_list = Post.published.all()  # извлек. все посты со статусом PUBLISHED, исп. менеджер
-#     # published
-#     # # Постраничная разбивка с 3 постами на страницу
-#     paginator = Paginator(post_list, 3)  # paginator - экземпляр класса Paginator с числом объектов,
-#     # возвращаемых в расчете на страницу
-#     page_number = request.GET.get("page", 1)  # извлекаем HTTP GET-параметр page и сохраняем его в
-#     # переменной page_number. Если параметра page нет в GET-параметрах запроса, используем
-#     # стандартное значение 1, чтобы загрузить первую страницу результатов.
-#     try:
-#         posts = paginator.page(page_number)  # получ. объекты для желаем. стр., вызывая метод page()
-#     except PageNotAnInteger:  # Если page_number не целое число, то выдать первую страницу
-#         posts = paginator.page(1)
-#     except EmptyPage:  # Если page_number находится вне диапазона, то выдать последнюю страницу
-#         posts = paginator.page(paginator.num_pages)  # paginator.num_pages - общее число страниц
-#     return render(request=request,
-#                   template_name="blog/post/list.html",
-#                   context={"posts": posts})
+def post_list(request, tag_slug=None):
+    post_list = Post.published.all()  # извлек. все посты со статусом PUBLISHED,
+    # исп. менеджер published
+    tag = None
+    if tag_slug:
+        tag = get_object_or_404(Tag, slug=tag_slug)  # извлекаем tag если он есть
+        post_list = post_list.filter(tags__in=[tag])  # извлекаем все посты которые
+        # содержат определенный tag . операция __in поиска по полю
+    # Постраничная разбивка с 3 постами на страницу
+    paginator = Paginator(post_list, 3)  # paginator - экземпляр класса Paginator с числом объектов,
+    # возвращаемых в расчете на страницу
+    page_number = request.GET.get("page", 1)  # извлекаем HTTP GET-параметр page и сохраняем его в
+    # переменной page_number. Если параметра page нет в GET-параметрах запроса, используем
+    # стандартное значение 1, чтобы загрузить первую страницу результатов.
+    try:
+        posts = paginator.page(page_number)  # получ. объекты для желаем. стр., вызывая метод page()
+    except PageNotAnInteger:  # Если page_number не целое число, то выдать первую страницу
+        posts = paginator.page(1)
+    except EmptyPage:  # Если page_number находится вне диапазона, то выдать последнюю страницу
+        posts = paginator.page(paginator.num_pages)  # paginator.num_pages - общее число страниц
+    return render(request=request,
+                  template_name="blog/post/list.html",
+                  context={"posts": posts, "tag": tag})
 
-class PostListView(ListView):  # ListView позволяет перечислять объекты любого типа
-    """    Альтернативное представление списка постов    """
-    queryset = Post.published.all()  # атрибут queryset, нужен для того, чтобы иметь
-    # конкретно-прикладной набор запросов QuerySet, не извлекая все объекты базы данных
-    context_object_name = "posts"  # контекстная переменная posts исп. для результатов запроса
-    # queryset. Если не указ. имя контекстного объекта то по умолчанию исп. переменная object_list
-    paginate_by = 3  # задается постраничная разбивка результатов с возвратом 3 объектов на страницу
-    template_name = "blog/post/list.html"  # путь + шаблон котор. исп. для прорисовки страницы
+# class PostListView(ListView):  # ListView позволяет перечислять объекты любого типа
+#     """    Альтернативное представление списка постов    """
+#     # def __init__(self, *args, **kwargs):
+#     #     self.tag_slug = kwargs.pop("tag_slug", None)
+#     #     super(PostListView, self).__init__(*args, **kwargs)
+#     #
+#     # if tag_slug:
+#
+#     queryset = Post.published.all()  # атрибут queryset, нужен для того, чтобы иметь
+#     # конкретно-прикладной набор запросов QuerySet, не извлекая все объекты базы данных
+#     context_object_name = "posts"  # контекстная переменная posts исп. для результатов запроса
+#     # queryset. Если не указ. имя контекстного объекта то по умолчанию исп. переменная object_list
+#     paginate_by = 3  # задается постраничная разбивка результатов с возвратом 3 объектов на страницу
+#     template_name = "blog/post/list.html"  # путь + шаблон котор. исп. для прорисовки страницы
 
 
 def post_detail(request, year, month, day, post):
