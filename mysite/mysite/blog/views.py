@@ -8,6 +8,7 @@ from .froms import EmailPostForm, CommentForm
 from .models import Post, Comment
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from taggit.models import Tag
+from django.db.models import Count
 
 
 def index(request):
@@ -37,6 +38,7 @@ def post_list(request, tag_slug=None):
     return render(request=request,
                   template_name="blog/post/list.html",
                   context={"posts": posts, "tag": tag})
+
 
 # class PostListView(ListView):  # ListView позволяет перечислять объекты любого типа
 #     """    Альтернативное представление списка постов    """
@@ -71,9 +73,20 @@ def post_detail(request, year, month, day, post):
     # извлекаем все активные комментарии к посту. используем объект post, чтобы извлекать
     # связанные объекты Comment.используя атрибут related_name поля ForeignKey в модели Post
     form = CommentForm()
+
+    post_tags_ids = post.tags.values_list("id", flat=True)
+    # получаем список идентификаторов (id) тегов, связанных с определенным постом (post).
+    similar_posts = Post.published.filter(tags__in=post_tags_ids).exclude(pk=post.id)
+    # фильтруем все посты, которые имеют хотя бы один общий тег с исходным постом.
+    similar_posts = similar_posts.annotate(same_tags=Count("tags")).order_by("-same_tags",
+                                                                             "-publish")[:4]
+    # выполняем annotate на результате фильтрации similar_posts.  Count("tags") подсчитывает
+    # количество связанных тегов (tags) для каждого поста и сохр. кол-во в нов. пер same_tags
+    # сортируем по кол-ву связ. тегов и публикации и нарезается чтобы получ. только 4 поста
     return render(request=request,
                   template_name="blog/post/detail.html",
-                  context={"post": post, "form": form, "comments": comments})
+                  context={"post": post, "form": form, "comments": comments,
+                           "similar_posts": similar_posts})
 
 
 def post_share(request, post_id):
@@ -105,7 +118,7 @@ def post_share(request, post_id):
         form = EmailPostForm()  # просто создаем форму ввода для данных и передаем на фронт
     return render(request=request,
                   template_name="blog/post/share.html",
-                  context={"post": post, "form": form, "sent": sent},)
+                  context={"post": post, "form": form, "sent": sent}, )
 
 
 @require_POST
