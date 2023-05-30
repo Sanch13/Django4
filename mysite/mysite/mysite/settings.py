@@ -10,6 +10,8 @@ SECRET_KEY = settings.SECRET_KEY
 DEBUG = settings.DEBUG
 ALLOWED_HOSTS = [settings.ALLOWED_HOSTS]
 
+SITE_ID = 1  # ИД сайта
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -20,6 +22,10 @@ INSTALLED_APPS = [
     "django_extensions",
     "blog.apps.BlogConfig",
     "taggit",
+    "django.contrib.sites",
+    "django.contrib.sitemaps",
+    "django.contrib.postgres"
+
 ]
 
 MIDDLEWARE = [

@@ -4,11 +4,12 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from django.conf import settings
 from django.views.decorators.http import require_POST
-from .froms import EmailPostForm, CommentForm
+from .froms import EmailPostForm, CommentForm, SearchForm
 from .models import Post, Comment
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from taggit.models import Tag
 from django.db.models import Count
+from django.contrib.postgres.search import SearchVector
 
 
 def index(request):
@@ -139,3 +140,21 @@ def post_comment(request, post_id):
     return render(request=request,
                   template_name="blog/post/comment.html",
                   context={"post": post, "form": form, "comment": comment})
+
+
+def post_search(request):
+    form = SearchForm()  # экземпляр формы SearchForm
+    query = None  #
+    results = []
+    if "query" in request.GET:  # есть ли query в get запросе? Для проверки того, что форма была
+        # передана на обработку, в словаре request.GET. если нет то форма рендериться пустая
+        form = SearchForm(request.GET)  # создается ее экземпляр, используя переданные данные GET
+        if form.is_valid():  # проверяется валидность данных формы
+            query = form.cleaned_data["query"]  # забираем value из очищенного словаря
+            results = Post.published.annotate(search=SearchVector("title", "body"), ).filter(
+                search=query)  # выполняется поиск опубликованных постов в которых есть query
+    return render(request=request,
+                  template_name="blog/post/search.html",
+                  context={"form": form,
+                           "query": query,
+                           "results": results})
