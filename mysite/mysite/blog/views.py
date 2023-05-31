@@ -9,7 +9,7 @@ from .models import Post, Comment
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from taggit.models import Tag
 from django.db.models import Count
-from django.contrib.postgres.search import SearchVector
+from django.contrib.postgres.search import SearchVector, SearchRank, SearchQuery
 
 
 def index(request):
@@ -151,8 +151,13 @@ def post_search(request):
         form = SearchForm(request.GET)  # создается ее экземпляр, используя переданные данные GET
         if form.is_valid():  # проверяется валидность данных формы
             query = form.cleaned_data["query"]  # забираем value из очищенного словаря
-            results = Post.published.annotate(search=SearchVector("title", "body"), ).filter(
-                search=query)  # выполняется поиск опубликованных постов в которых есть query
+            search_vector = SearchVector("title", "body")
+            search_query = SearchQuery(query)
+            results = Post.published.annotate(
+                search=search_vector,
+                rank=SearchRank(search_vector, search_query)
+            ).filter(search=query).order_by("-rank")
+            # выполняется поиск опубликованных постов в которых есть query
     return render(request=request,
                   template_name="blog/post/search.html",
                   context={"form": form,
