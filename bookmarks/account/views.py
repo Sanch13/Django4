@@ -47,7 +47,6 @@ def register(request):
         user_form = UserRegistrationForm(data=request.POST)
         if user_form.is_valid():
             new_user = user_form.save(commit=False)
-            print(new_user.__dict__)
             # Метод save() создает экземпляр модели, к которой форма привязана, и сохраняет его
             # в базе данных. Если вызывать его, используя commit=False, то экземпляр модели
             # создается, но не сохраняется в базе данных. Такой подход позволяет видоизменять
@@ -55,7 +54,6 @@ def register(request):
             new_user.set_password(user_form.cleaned_data["password"])
             # Установить выбранный пароль
             new_user.save()
-            print(new_user.__dict__)
             Profile.objects.create(user=new_user)
             # При регистрации пользователей в системе будет создаваться объект Profile,
             # который будет ассоциирован с созданным объектом User.
@@ -83,11 +81,9 @@ def edit(request):
             profile_form.save()
             messages.success(request=request,
                              message="Profile updated successfully")
-            print(messages, messages.__dict__)
         else:
             messages.error(request=request,
                            message="Error updated your profile")
-            print(messages, messages.__dict__)
     else:
         user_form = UserEditForm(instance=request.user)
         profile_form = ProfileEditForm(instance=request.user.profile)
