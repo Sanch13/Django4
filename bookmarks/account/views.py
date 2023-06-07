@@ -1,8 +1,14 @@
+from .models import Profile
+from .forms import LoginForm, UserRegistrationForm, UserEditForm, ProfileEditForm
+from django.contrib import messages
 from django.shortcuts import render
-from .forms import LoginForm, UserRegistrationForm
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+
+
+def index(request):
+    return render(request=request, template_name="base.html")
 
 
 def user_login(request):
@@ -50,6 +56,9 @@ def register(request):
             # Установить выбранный пароль
             new_user.save()
             print(new_user.__dict__)
+            Profile.objects.create(user=new_user)
+            # При регистрации пользователей в системе будет создаваться объект Profile,
+            # который будет ассоциирован с созданным объектом User.
             return render(request=request,
                           template_name="account/register_done.html",
                           context={"user_form": user_form})
@@ -58,3 +67,31 @@ def register(request):
     return render(request=request,
                   template_name="account/register.html",
                   context={"user_form": user_form})
+
+
+@login_required  # только аутентифицированные пользователи могут редактировать свои профили
+def edit(request):
+    """чтобы пользователи могли редактировать свою личную информацию."""
+    if request.method == "POST":
+        user_form = UserEditForm(instance=request.user,
+                                 data=request.POST)
+        profile_form = ProfileEditForm(instance=request.user.profile,
+                                       data=request.POST,
+                                       files=request.FILES)
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request=request,
+                             message="Profile updated successfully")
+            print(messages, messages.__dict__)
+        else:
+            messages.error(request=request,
+                           message="Error updated your profile")
+            print(messages, messages.__dict__)
+    else:
+        user_form = UserEditForm(instance=request.user)
+        profile_form = ProfileEditForm(instance=request.user.profile)
+    return render(request=request,
+                  template_name="account/edit.html",
+                  context={"profile_form": profile_form,
+                           "user_form": user_form})
