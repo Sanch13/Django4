@@ -32,6 +32,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',  # Фреймворк сообщений
     'django.contrib.staticfiles',
+    "social_django",
+    "django_extensions",  # сторонняя коллекция конкретно-прикладных расширений для Django.
 ]
 
 MIDDLEWARE = [
@@ -67,7 +69,17 @@ WSGI_APPLICATION = 'bookmarks.wsgi.application'
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "account.authentication.EmailAuthBackend",
+    "social_core.backends.facebook.FacebookOAuth2",
+    "social_core.backends.twitter.TwitterOAuth",
+    "social_core.backends.google.GoogleOAuth2",
 ]
+SOCIAL_AUTH_FACEBOOK_KEY = settings.SOCIAL_AUTH_FACEBOOK_KEY
+SOCIAL_AUTH_FACEBOOK_SECRET = settings.SOCIAL_AUTH_FACEBOOK_SECRET
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = settings.SOCIAL_AUTH_FACEBOOK_KEY
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = settings.SOCIAL_AUTH_FACEBOOK_SECRET
+
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
