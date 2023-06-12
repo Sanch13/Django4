@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "social_django",
     "django_extensions",  # сторонняя коллекция конкретно-прикладных расширений для Django.
+    "images.apps.ImagesConfig",
 ]
 
 MIDDLEWARE = [
@@ -73,6 +74,20 @@ AUTHENTICATION_BACKENDS = [
     "social_core.backends.twitter.TwitterOAuth",
     "social_core.backends.google.GoogleOAuth2",
 ]
+
+SOCIAL_AUTH_PIPELINE = [
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    "account.authentication.create_profile",
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+]
+
 SOCIAL_AUTH_FACEBOOK_KEY = settings.SOCIAL_AUTH_FACEBOOK_KEY
 SOCIAL_AUTH_FACEBOOK_SECRET = settings.SOCIAL_AUTH_FACEBOOK_SECRET
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
@@ -92,14 +107,14 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = settings.SOCIAL_AUTH_FACEBOOK_SECRET
 
 DATABASES = {
     'default': {
-            'ENGINE': settings.ENGINE,
-            'NAME': settings.NAME_DB,
-            'USER': settings.USER,
-            'PASSWORD': settings.PASSWORD,
-            'HOST': settings.HOST,
-            'PORT': settings.PORT,
+        'ENGINE': settings.ENGINE,
+        'NAME': settings.NAME_DB,
+        'USER': settings.USER,
+        'PASSWORD': settings.PASSWORD,
+        'HOST': settings.HOST,
+        'PORT': settings.PORT,
 
-        }
+    }
 }
 
 # Password validation
@@ -120,7 +135,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -128,7 +142,6 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
