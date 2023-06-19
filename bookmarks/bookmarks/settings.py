@@ -18,7 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = settings.SECRET_KEY
 DEBUG = settings.DEBUG
-ALLOWED_HOSTS = [settings.ALLOWED_HOSTS]
+ALLOWED_HOSTS = ['*']
 
 LOGIN_REDIRECT_URL = "dashboard"
 LOGIN_URL = "login"
@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "social_django",
     "django_extensions",  # сторонняя коллекция конкретно-прикладных расширений для Django.
     "images.apps.ImagesConfig",
+    "easy_thumbnails",
 ]
 
 MIDDLEWARE = [
