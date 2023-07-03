@@ -7,6 +7,8 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from actions.models import Actions
+from actions.utils import create_action
 
 
 def index(request):
@@ -59,6 +61,8 @@ def register(request):
             Profile.objects.create(user=new_user)
             # При регистрации пользователей в системе будет создаваться объект Profile,
             # который будет ассоциирован с созданным объектом User.
+            create_action(user=new_user,
+                          verb="Has created account")
             return render(request=request,
                           template_name="account/register_done.html",
                           context={"user_form": user_form})
@@ -125,7 +129,9 @@ def user_follow(request):
                 Contact.objects.get_or_create(
                     user_from=request.user,
                     user_to=user)
-                # create_action(request.user, 'is following', user)
+                create_action(user=request.user,
+                              verb="is following",
+                              target=user)
             else:
                 Contact.objects.filter(user_from=request.user,
                                        user_to=user).delete()
@@ -133,3 +139,17 @@ def user_follow(request):
         except User.DoesNotExist:
             return JsonResponse({'status': 'error'})
     return JsonResponse({'status': 'error'})
+
+
+@login_required
+def dashboard(request):
+    actions = Actions.objects.exclude(user=request.user)
+    following_ids = request.user.following.values_list("id", flat=True)
+    if following_ids:
+        # Если пользователь подписан на других, то извлечь только их действия
+        actions = actions.filter(user_id__in=following_ids)
+    actions = actions.select_related("user", "user__profile")[:10].prefetch_related("target")[:10]
+    return render(request=request,
+                  template_name="account/dashboard.html",
+                  context={"section": "dashboard",
+                           "actions": actions})

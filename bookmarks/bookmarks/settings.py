@@ -33,7 +33,8 @@ INSTALLED_APPS = [
     "account.apps.AccountConfig",
     'django.contrib.admin',
     'django.contrib.auth',
-    'django.contrib.contenttypes',
+    'django.contrib.contenttypes',  # отслеж. все устан. в проекте модели и предост. тип. интерфейс
+    # взаимодействия с этими моделями
     'django.contrib.sessions',
     'django.contrib.messages',  # Фреймворк сообщений
     'django.contrib.staticfiles',
@@ -41,9 +42,13 @@ INSTALLED_APPS = [
     "django_extensions",  # сторонняя коллекция конкретно-прикладных расширений для Django.
     "images.apps.ImagesConfig",
     "easy_thumbnails",
+    "actions.apps.ActionsConfig",
+    "debug_toolbar",
+
 ]
 
 MIDDLEWARE = [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -111,6 +116,10 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = settings.SOCIAL_AUTH_FACEBOOK_SECRET
 #     }
 # }
 
+REDIS_HOST = "localhost"
+REDIS_PORT = 6379
+REDIS_DB = 0
+
 DATABASES = {
     'default': {
         'ENGINE': settings.ENGINE,
@@ -167,3 +176,8 @@ EMAIL_HOST_USER = settings.EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = settings.EMAIL_HOST_PASSWORD
 EMAIL_PORT = settings.EMAIL_PORT
 EMAIL_USE_TLS = settings.EMAIL_USE_TLS
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
+
