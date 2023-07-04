@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "shop.apps.ShopConfig",
+    "cart.apps.CartConfig",
 ]
 
 MIDDLEWARE = [
@@ -29,6 +30,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CART_SESSION_ID = "cart"  # ключ, который будет исп. для хранения корзины в пользовательском сеансе.
 ROOT_URLCONF = 'myshop.urls'
 
 TEMPLATES = [
