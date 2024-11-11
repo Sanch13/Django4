@@ -1,4 +1,5 @@
 .idea
+env_site
 venv
 *pycache*
 *.env
