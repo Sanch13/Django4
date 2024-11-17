@@ -1,13 +1,16 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-23f--46jb0(^cc@=8pazr3j$f^=hy)=n0186eamja!k#nh*$-*'
+SECRET_KEY = os.environ.get("SECRET_KEY")
+DEBUG = os.environ.get("DEBUG")
 
-DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(' ')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -74,11 +77,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 STATIC_URL = 'static/'
@@ -89,3 +89,10 @@ STATICFILES_DIRS = (
 )
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Конфигурация сервера электронной почты
+EMAIL_HOST = os.environ.get("SMTP_SERVER")
+EMAIL_HOST_USER = os.environ.get("FROM_APP")
+EMAIL_HOST_PASSWORD = os.environ.get("PASSWORD_APP")
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
