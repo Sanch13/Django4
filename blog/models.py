@@ -1,6 +1,11 @@
+import uuid
+
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.urls import reverse
+
+from blog.managers.managers import PublishedManager
 
 
 class Post(models.Model):
@@ -20,6 +25,10 @@ class Post(models.Model):
     author = models.ForeignKey(User,
                                on_delete=models.CASCADE,
                                related_name='blog_posts')
+    slug = models.SlugField(max_length=250, default=uuid.uuid4, unique=True)
+
+    objects = models.Manager()
+    published = PublishedManager()
 
     class Meta:
         ordering = ['-publish']
@@ -29,3 +38,6 @@ class Post(models.Model):
 
     def __str__(self):
         return f"{self.title} {self.id}"
+
+    def get_absolute_url(self):
+        return reverse(viewname="blog:post_detail", args=[self.slug])
