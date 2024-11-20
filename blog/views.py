@@ -3,6 +3,9 @@ from django.core.mail import send_mail
 from django.views import generic
 from django.conf import settings
 from django.views.decorators.http import require_POST
+from django.db.models import Count
+
+from taggit.models import Tag
 
 from blog.forms import EmailPostForm, CommentForm
 from blog.models import Post
@@ -86,6 +89,26 @@ class PostListView(generic.ListView):
     context_object_name = "posts"
     template_name = "blog/post/list.html"
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        tag_slug = self.kwargs.get("tag_slug", None)
+        if tag_slug:
+            tag = get_object_or_404(Tag, slug=tag_slug)
+            queryset = queryset.filter(tags__in=[tag])
+        return queryset
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        tag_slug = self.kwargs.get("tag_slug", None)
+        if tag_slug:
+            context["tag"] = get_object_or_404(Tag, slug=tag_slug)
+        else:
+            context["tag"] = None
+            print(context)
+        return context
+
 
 class PostDetailView(generic.DetailView):
     queryset = Post.published.all()
@@ -93,6 +116,21 @@ class PostDetailView(generic.DetailView):
     context_object_name = "post"
     slug_field = "slug"
     slug_url_kwarg = "slug"  # Указываем, какой параметр из URL использовать
+
+    def get_similar_posts(self):
+        # Получаем текущий объект поста
+        post = self.get_object()
+
+        # Получаем все ID тегов текущего поста
+        post_tags_ids = post.tags.values_list('id', flat=True)
+
+        similar_posts = Post.published.filter(tags__in=post_tags_ids) \
+            .exclude(id=post.id)
+
+        similar_posts = similar_posts.annotate(same_tags=Count('tags')) \
+                            .order_by('-same_tags', '-publish')[:4]
+
+        return similar_posts
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)  # Получаем стандартный контекст
@@ -102,4 +140,5 @@ class PostDetailView(generic.DetailView):
 
         context['comments'] = comments
         context['form'] = form
+        context['similar_posts'] = self.get_similar_posts()
         return context
