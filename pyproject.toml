@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "dj4"
+version = "0.1.0"
+description = ""
+authors = ["sanch13 <sanch13sanch@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+python-dotenv = "1.0.1"
+django = "4.2.17"
+django-extensions = "3.2.3"
+django-taggit = "6.1.0"
+psycopg2-binary = "2.9.10"
+markdown = "3.7"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
